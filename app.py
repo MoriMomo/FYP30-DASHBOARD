@@ -612,9 +612,17 @@ with tab_rootcause:
     if not df_belum.empty:
         df_belum["Gap Sizing"] = df_belum["selisih"].apply(lambda v: max(1, v))
         
-        # Clean 2-line label so text stays large and crystal clear on mobile screens
+        # Clean multi-line compact label with detailed info (Name, Selisih, Prediksi vs Apps, Session notes)
         def make_leaf_label(r):
-            return f"<b>{r['NAMA FRESHMEN']}</b><br>Selisih: -{r['selisih']} pt"
+            lbl = f"<b>{r['NAMA FRESHMEN']}</b><br>Selisih: -{r['selisih']} pt ({r['prediksi point']} ➔ {r['point apps']})"
+            notes = []
+            if r['Sesi yang 0'] != "-":
+                notes.append(f"0: {r['Sesi yang 0']}")
+            if r['Sesi yang Kosong'] != "-":
+                notes.append(f"Kosong: {r['Sesi yang Kosong']}")
+            if notes:
+                lbl += f"<br>" + " | ".join(notes)
+            return lbl
 
         df_belum["Leaf Label"] = df_belum.apply(make_leaf_label, axis=1)
 
