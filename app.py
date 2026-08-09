@@ -102,13 +102,23 @@ st.markdown("""
             padding: 14px 16px !important;
         }
         .stTabs [data-baseweb="tab-list"] {
-            gap: 4px !important;
+            gap: 6px !important;
             overflow-x: auto !important;
-            white-space: nowrap !important;
+            -webkit-overflow-scrolling: touch !important;
+            flex-wrap: nowrap !important;
+            padding-bottom: 6px !important;
         }
         .stTabs [data-baseweb="tab"] {
             font-size: 0.82rem !important;
-            padding: 8px 10px !important;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+            background: rgba(255, 255, 255, 0.04) !important;
+            margin-right: 4px !important;
+        }
+        .stTabs [data-baseweb="tab"][aria-selected="true"] {
+            background: rgba(59, 130, 246, 0.25) !important;
+            color: #60a5fa !important;
+            font-weight: 700 !important;
         }
     }
 </style>
@@ -384,13 +394,13 @@ if search_query:
 # MAIN DASHBOARD TABS
 # ============================================================
 tab_overview, tab_rootcause, tab_course, tab_scatter, tab_diagnostics, tab_details, tab_action = st.tabs([
-    "📊 Executive Overview",
-    "🌳 Root-Cause Hierarchical",
-    "📚 Course & Session Drop",
-    "📈 Compliance Scatter & Matrix",
-    "👤 PIC & FL Diagnostics",
-    "📋 Detail Freshman Data",
-    "💬 Actionable WA Report"
+    "📊 Overview",
+    "🌳 Treemap",
+    "📚 Courses",
+    "📈 Scatter",
+    "👤 Diagnostics",
+    "📋 Details",
+    "💬 WA Report"
 ])
 
 # ------------------------------------------------------------
