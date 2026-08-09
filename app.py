@@ -384,10 +384,6 @@ Silakan upload file Excel terbaru kamu di bawah ini (format: <b>1 sheet = 1 kela
                 uploaded_file = center_file
                 df_raw = process_data(uploaded_file, is_demo=False)
             else:
-                st.markdown("<div style='text-align: center; color: #94a3b8; font-size: 0.9rem; margin-top: 15px;'>Belum punya file Excel? Coba langsung dashboard dengan data demo:</div>", unsafe_allow_html=True)
-                if st.button("⚡ Gunakan Sample Demo Data Langsung", use_container_width=True, type="primary"):
-                    st.session_state["use_demo"] = True
-                    st.rerun()
                 st.stop()
     else:
         df_raw = process_data(uploaded_file, is_demo=False)
