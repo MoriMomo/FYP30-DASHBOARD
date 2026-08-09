@@ -260,11 +260,11 @@ def process_data(file_buffer, is_demo=False):
             return "🟢 Sesuai"
         diff = row["selisih"]
         if diff <= 2:
-            return "🟡 Low Variance (1-2 pts)"
+            return "🟡 Beda Tipis (1-2 Point)"
         elif diff <= 5:
-            return "🟠 Medium Variance (3-5 pts)"
+            return "🟠 Beda Sedang (3-5 Point)"
         else:
-            return "🔴 High Priority Audit (>5 pts)"
+            return "🔴 Beda Banyak (>5 Point)"
 
     df_all["Severity Level"] = df_all.apply(classify_severity, axis=1)
 
@@ -411,8 +411,8 @@ selected_kelas = st.sidebar.multiselect("Kelas", all_kelas, default=all_kelas)
 
 status_filter = st.sidebar.radio("Filter Status Point", ["Semua", "Belum Sesuai", "Sesuai"])
 
-severity_list = ["🟢 Sesuai", "🟡 Low Variance (1-2 pts)", "🟠 Medium Variance (3-5 pts)", "🔴 High Priority Audit (>5 pts)"]
-selected_severity = st.sidebar.multiselect("Severity Discrepancy", severity_list, default=severity_list)
+severity_list = ["🟢 Sesuai", "🟡 Beda Tipis (1-2 Point)", "🟠 Beda Sedang (3-5 Point)", "🔴 Beda Banyak (>5 Point)"]
+selected_severity = st.sidebar.multiselect("Filter Tingkat Selisih Point", severity_list, default=severity_list)
 
 # Filtering Engine
 df_filtered = df_raw[
@@ -436,11 +436,11 @@ if search_query:
 # MAIN DASHBOARD TABS
 # ============================================================
 tab_overview, tab_rootcause, tab_diagnostics, tab_details, tab_action = st.tabs([
-    "📊 Overview",
-    "🌳 Treemap",
-    "👤 Diagnostics",
-    "📋 Details",
-    "💬 WA Report"
+    "📊 Ringkasan",
+    "🌳 Peta Pemetaan",
+    "👤 Ranking FL & PIC",
+    "📋 Data Detail",
+    "💬 Pesan WA"
 ])
 
 # ------------------------------------------------------------
@@ -450,7 +450,7 @@ with tab_overview:
     total_fm = len(df_filtered)
     sesuai_count = len(df_filtered[df_filtered["Status"] == "Sesuai"])
     belum_count = len(df_filtered[df_filtered["Status"] == "Belum Sesuai"])
-    high_risk_count = len(df_filtered[df_filtered["Severity Level"] == "🔴 High Priority Audit (>5 pts)"])
+    high_risk_count = len(df_filtered[df_filtered["Severity Level"] == "🔴 Beda Banyak (>5 Point)"])
     
     compliance_rate = (sesuai_count / total_fm * 100) if total_fm > 0 else 0
     mismatch_rate = (belum_count / total_fm * 100) if total_fm > 0 else 0
@@ -460,18 +460,18 @@ with tab_overview:
     with kpi_col1:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Total Freshmen</div>
+            <div class="metric-title">Total Freshman</div>
             <div class="metric-value">{total_fm:,}</div>
-            <div class="metric-subtitle">Filtered Students</div>
+            <div class="metric-subtitle">Mahasiswa Terfilter</div>
         </div>
         """, unsafe_allow_html=True)
 
     with kpi_col2:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Compliance Rate</div>
+            <div class="metric-title">Persentase Sesuai</div>
             <div class="metric-value">{compliance_rate:.1f}%</div>
-            <div class="metric-subtitle">{sesuai_count} Sesuai</div>
+            <div class="metric-subtitle">{sesuai_count} Student Sesuai</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -480,16 +480,16 @@ with tab_overview:
         <div class="metric-card">
             <div class="metric-title">Belum Sesuai</div>
             <div class="metric-value" style="color: #f87171;">{belum_count:,}</div>
-            <div class="metric-subtitle negative">{mismatch_rate:.1f}% Discrepancy</div>
+            <div class="metric-subtitle negative">{mismatch_rate:.1f}% Perlu Cek</div>
         </div>
         """, unsafe_allow_html=True)
 
     with kpi_col4:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">High Risk Audit</div>
+            <div class="metric-title">Beda > 5 Point</div>
             <div class="metric-value" style="color: #ef4444;">{high_risk_count:,}</div>
-            <div class="metric-subtitle negative">Point Gap > 5</div>
+            <div class="metric-subtitle negative">Selisih Banyak</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -498,16 +498,16 @@ with tab_overview:
         active_classes = df_filtered["Kelas"].nunique()
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-title">Coverage</div>
+            <div class="metric-title">Jumlah Kelas & PIC</div>
             <div class="metric-value">{active_classes} <span style="font-size: 1rem; color: #888;">Kelas</span></div>
-            <div class="metric-subtitle">{active_pics} Active PICs</div>
+            <div class="metric-subtitle">{active_pics} PIC Aktif</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     # Automated Data Insights Callout Box
-    st.subheader("💡 Automated Data Science Insights")
+    st.subheader("💡 Ringkasan Penting Hari Ini")
     if not df_filtered.empty:
         class_discrepancy = df_filtered.groupby("Kelas")["Status"].apply(lambda s: (s == "Belum Sesuai").sum()).sort_values(ascending=False)
         top_disc_class = class_discrepancy.index[0] if len(class_discrepancy) > 0 else "-"
@@ -525,13 +525,13 @@ with tab_overview:
         insight_col1, insight_col2 = st.columns(2)
         with insight_col1:
             st.info(f"""
-            📌 **Kelas Discrepancy Tertinggi:** **{top_disc_class}** ({top_disc_class_count} freshman belum sesuai)  
-            🚨 **FL Perlu Perhatian Khusus:** **{top_fl_name}** (Kelas {top_fl_class} - {top_fl_count} freshman bermasalah)
+            📌 **Kelas Paling Banyak Belum Sesuai:** **{top_disc_class}** ({top_disc_class_count} freshman belum sesuai)  
+            🚨 **Freshmen Leader (FL) Perlu Cek Ulang:** **{top_fl_name}** (Kelas {top_fl_class} - {top_fl_count} freshman bermasalah)
             """)
         with insight_col2:
             st.warning(f"""
             📚 **Top Sesi Incomplete Terbanyak:** **{top_sess_name}** ({top_sess_count} kejadian)  
-            ⚡ Terdapat **{high_risk_count}** freshman kategori **High Priority Audit** yang membutuhkan pengecekan ulang logbook secepatnya.
+            ⚡ Terdapat **{high_risk_count}** freshman dengan **Selisih > 5 Point** yang membutuhkan pengecekan ulang logbook secepatnya.
             """)
 
     st.divider()
@@ -539,7 +539,7 @@ with tab_overview:
     chart_col1, chart_col2 = st.columns([1, 1])
 
     with chart_col1:
-        st.subheader("🍩 Proporsi Compliance Status")
+        st.subheader("🍩 Perbandingan Status Point")
         status_counts = df_filtered["Status"].value_counts().reset_index()
         status_counts.columns = ["Status", "Jumlah"]
         
@@ -556,7 +556,7 @@ with tab_overview:
         st.plotly_chart(fig_donut, use_container_width=True)
 
     with chart_col2:
-        st.subheader("📊 Distribution by Discrepancy Severity")
+        st.subheader("📊 Grafik Tingkat Selisih Point")
         sev_counts = df_filtered["Severity Level"].value_counts().reset_index()
         sev_counts.columns = ["Severity", "Jumlah"]
         
@@ -568,9 +568,9 @@ with tab_overview:
             color="Severity",
             color_discrete_map={
                 "🟢 Sesuai": "#22c55e",
-                "🟡 Low Variance (1-2 pts)": "#eab308",
-                "🟠 Medium Variance (3-5 pts)": "#f97316",
-                "🔴 High Priority Audit (>5 pts)": "#ef4444"
+                "🟡 Beda Tipis (1-2 Point)": "#eab308",
+                "🟠 Beda Sedang (3-5 Point)": "#f97316",
+                "🔴 Beda Banyak (>5 Point)": "#ef4444"
             },
             text="Jumlah"
         )
@@ -602,10 +602,10 @@ with tab_overview:
 # TAB 2: ROOT-CAUSE HIERARCHICAL ANALYSIS
 # ------------------------------------------------------------
 with tab_rootcause:
-    st.subheader("🌳 Hierarchical Root-Cause Analysis")
-    st.caption("Eksplorasi hirarki bertingkat untuk mengisolasi sumber selisih point dari PIC hingga ke mahasiswa.")
+    st.subheader("🌳 Peta Pemetaan Freshman Belum Sesuai")
+    st.caption("Lihat daftar freshman yang belum sesuai point-nya, dikelompokkan berdasarkan PIC, Kelas, dan Freshmen Leader (FL).")
 
-    chart_type = st.radio("Pilih Tampilan Visualisasi Hirarki:", ["🌳 Interactive Treemap", "☀️ Sunburst Chart"], horizontal=True)
+    chart_type = st.radio("Pilih Mode Grafik:", ["🌳 Kotak Hirarki (Treemap)", "☀️ Lingkaran Bertingkat (Sunburst)"], horizontal=True)
 
     df_belum = df_filtered[df_filtered["Status"] == "Belum Sesuai"].copy()
     
@@ -626,16 +626,16 @@ with tab_rootcause:
 
         df_belum["Leaf Label"] = df_belum.apply(make_leaf_label, axis=1)
 
-        if chart_type == "🌳 Interactive Treemap":
+        if chart_type == "🌳 Kotak Hirarki (Treemap)":
             fig_hierarchy = px.treemap(
                 df_belum,
                 path=["PIC", "Kelas", "NAMA FRESHMEN LEADER", "Leaf Label"],
                 values="Gap Sizing",
                 color="Severity Level",
                 color_discrete_map={
-                    "🟡 Low Variance (1-2 pts)": "#eab308",
-                    "🟠 Medium Variance (3-5 pts)": "#f97316",
-                    "🔴 High Priority Audit (>5 pts)": "#ef4444"
+                    "🟡 Beda Tipis (1-2 Point)": "#eab308",
+                    "🟠 Beda Sedang (3-5 Point)": "#f97316",
+                    "🔴 Beda Banyak (>5 Point)": "#ef4444"
                 },
                 custom_data=["NAMA FRESHMEN", "prediksi point", "point apps", "selisih", "NIM FRESHMEN", "Sesi yang 0", "Sesi yang Kosong"]
             )
@@ -651,9 +651,9 @@ with tab_rootcause:
                 values="Gap Sizing",
                 color="Severity Level",
                 color_discrete_map={
-                    "🟡 Low Variance (1-2 pts)": "#eab308",
-                    "🟠 Medium Variance (3-5 pts)": "#f97316",
-                    "🔴 High Priority Audit (>5 pts)": "#ef4444"
+                    "🟡 Beda Tipis (1-2 Point)": "#eab308",
+                    "🟠 Beda Sedang (3-5 Point)": "#f97316",
+                    "🔴 Beda Banyak (>5 Point)": "#ef4444"
                 },
                 custom_data=["prediksi point", "point apps", "selisih"]
             )
