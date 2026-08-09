@@ -184,43 +184,24 @@ def generate_sample_dataset():
                 "selisih": abs(prediksi - apps),
                 "Sesi yang 0": sesi_0,
                 "Sesi yang Kosong": sesi_kosong
-            })
-            
-    return pd.DataFrame(rows)
-
-# ============================================================
 # DATA LOADING & FEATURE ENGINEERING ENGINE
 # ============================================================
 @st.cache_data
-def process_data(file_buffer, is_demo=False):
-    if is_demo:
-        if os.path.exists("logbook_mismatch_per_kelas.xlsx"):
-            xls = pd.ExcelFile("logbook_mismatch_per_kelas.xlsx")
-            all_dfs = []
-            for sheet_name in xls.sheet_names:
-                df_sheet = pd.read_excel(xls, sheet_name=sheet_name)
-                if not df_sheet.empty:
-                    df_sheet["Kelas"] = sheet_name.strip()
-                    all_dfs.append(df_sheet)
-            df_all = pd.concat(all_dfs, ignore_index=True)
-            df_all.columns = [str(c).strip() for c in df_all.columns]
-        else:
-            df_all = generate_sample_dataset()
-    else:
-        xls = pd.ExcelFile(file_buffer)
-        all_dfs = []
-        for sheet_name in xls.sheet_names:
-            df_sheet = pd.read_excel(xls, sheet_name=sheet_name)
-            if df_sheet.empty:
-                continue
-            df_sheet["Kelas"] = sheet_name.strip()
-            all_dfs.append(df_sheet)
+def process_data(file_buffer):
+    xls = pd.ExcelFile(file_buffer)
+    all_dfs = []
+    for sheet_name in xls.sheet_names:
+        df_sheet = pd.read_excel(xls, sheet_name=sheet_name)
+        if df_sheet.empty:
+            continue
+        df_sheet["Kelas"] = sheet_name.strip()
+        all_dfs.append(df_sheet)
 
-        if not all_dfs:
-            return pd.DataFrame()
-            
-        df_all = pd.concat(all_dfs, ignore_index=True)
-        df_all.columns = [str(c).strip() for c in df_all.columns]
+    if not all_dfs:
+        return pd.DataFrame()
+        
+    df_all = pd.concat(all_dfs, ignore_index=True)
+    df_all.columns = [str(c).strip() for c in df_all.columns]
 
     # Smart Column Alias Mapper
     col_rename_map = {}
@@ -351,31 +332,17 @@ FYPL & PIC dimohon melakukan audit silang dengan bukti fisik/digital pada Google
 
 st.sidebar.header("🎛️ Data Source & Filters")
 
-# Session State for Demo Toggle
-if "use_demo" not in st.session_state:
-    st.session_state["use_demo"] = False
+uploaded_file = st.sidebar.file_uploader("Upload File Excel Monitoring", type=["xlsx", "xls"], key="sidebar_uploader")
 
-# File Upload vs Demo Mode
-data_mode = st.sidebar.radio(
-    "Pilih Sumber Data:", 
-    ["Upload Excel File", "⚡ Gunakan Sample Demo Data"],
-    index=1 if st.session_state["use_demo"] else 0
-)
-
-# Reset demo mode if user selects upload manually
-if data_mode == "Upload Excel File" and st.session_state["use_demo"]:
-    st.session_state["use_demo"] = False
-
-uploaded_file = None
-if data_mode == "Upload Excel File":
-    sidebar_file = st.sidebar.file_uploader("Upload File Excel Monitoring", type=["xlsx", "xls"], key="sidebar_uploader")
-    uploaded_file = sidebar_file
-
-    if uploaded_file is None:
-        # Centered Hero Section for Upload
-        hero_col1, hero_col2, hero_col3 = st.columns([1, 2.8, 1])
-        with hero_col2:
-            st.markdown("""
+if uploaded_file is not None:
+    df_raw = process_data(uploaded_file)
+elif os.path.exists("logbook_mismatch_per_kelas.xlsx"):
+    df_raw = process_data("logbook_mismatch_per_kelas.xlsx")
+else:
+    # Centered Hero Section for Upload
+    hero_col1, hero_col2, hero_col3 = st.columns([1, 2.8, 1])
+    with hero_col2:
+        st.markdown("""
 <div style="text-align: center; padding: 28px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; margin-top: 10px; margin-bottom: 20px;">
 <h3 style="color: #60a5fa; margin-top: 0; font-weight: 700;">📥 Upload File Excel Monitoring FYP</h3>
 <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 16px;">
@@ -384,18 +351,13 @@ Silakan upload file Excel terbaru kamu di bawah ini (format: <b>1 sheet = 1 kela
 </div>
 """, unsafe_allow_html=True)
 
-            center_file = st.file_uploader("Drop file Excel di sini atau klik untuk memilih file", type=["xlsx", "xls"], key="center_uploader")
-            
-            if center_file is not None:
-                uploaded_file = center_file
-                df_raw = process_data(uploaded_file, is_demo=False)
-            else:
-                st.stop()
-    else:
-        df_raw = process_data(uploaded_file, is_demo=False)
-else:
-    df_raw = process_data(None, is_demo=True)
-    st.sidebar.success("✅ Menggunakan Sample Data Demo!")
+        center_file = st.file_uploader("Drop file Excel di sini atau klik untuk memilih file", type=["xlsx", "xls"], key="center_uploader")
+        
+        if center_file is not None:
+            uploaded_file = center_file
+            df_raw = process_data(uploaded_file)
+        else:
+            st.stop()
 
 if df_raw.empty:
     st.error("Data kosong atau format sheet tidak sesuai!")
