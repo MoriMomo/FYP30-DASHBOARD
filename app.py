@@ -612,17 +612,9 @@ with tab_rootcause:
     if not df_belum.empty:
         df_belum["Gap Sizing"] = df_belum["selisih"].apply(lambda v: max(1, v))
         
-        # Build detailed label string with session info
+        # Clean 2-line label so text stays large and crystal clear on mobile screens
         def make_leaf_label(r):
-            lbl = f"<b>{r['NAMA FRESHMEN']}</b><br>💥 Selisih: -{r['selisih']} pt ({r['prediksi point']} ➔ {r['point apps']})"
-            notes = []
-            if r['Sesi yang 0'] != "-":
-                notes.append(f"Nilai 0: {r['Sesi yang 0']}")
-            if r['Sesi yang Kosong'] != "-":
-                notes.append(f"Kosong: {r['Sesi yang Kosong']}")
-            if notes:
-                lbl += f"<br>📚 " + " | ".join(notes)
-            return lbl
+            return f"<b>{r['NAMA FRESHMEN']}</b><br>Selisih: -{r['selisih']} pt"
 
         df_belum["Leaf Label"] = df_belum.apply(make_leaf_label, axis=1)
 
@@ -640,7 +632,8 @@ with tab_rootcause:
                 custom_data=["NAMA FRESHMEN", "prediksi point", "point apps", "selisih", "NIM FRESHMEN", "Sesi yang 0", "Sesi yang Kosong"]
             )
             fig_hierarchy.update_traces(
-                hovertemplate="<b>%{customdata[0]}</b> (NIM: %{customdata[4]})<br>Prediksi: %{customdata[1]} pt<br>Apps: %{customdata[2]} pt<br><b>Selisih: -%{customdata[3]} pt</b><br>Sesi 0: %{customdata[5]}<br>Sesi Kosong: %{customdata[6]}<extra></extra>"
+                textfont=dict(size=14),
+                hovertemplate="<b>%{customdata[0]}</b> (NIM: %{customdata[4]})<br>Point Prediksi: %{customdata[1]} pt<br>Point Apps: %{customdata[2]} pt<br><b>Selisih Gap: -%{customdata[3]} pt</b><br>Sesi 0: %{customdata[5]}<br>Sesi Kosong: %{customdata[6]}<extra></extra>"
             )
             fig_hierarchy.update_layout(margin=dict(t=30, l=10, r=10, b=10), height=620)
             st.plotly_chart(fig_hierarchy, use_container_width=True)
