@@ -335,16 +335,52 @@ st.markdown(f"""
 
 st.sidebar.header("🎛️ Data Source & Filters")
 
+# Session State for Demo Toggle
+if "use_demo" not in st.session_state:
+    st.session_state["use_demo"] = False
+
 # File Upload vs Demo Mode
-data_mode = st.sidebar.radio("Pilih Sumber Data:", ["Upload Excel File", "⚡ Gunakan Sample Demo Data"])
+data_mode = st.sidebar.radio(
+    "Pilih Sumber Data:", 
+    ["Upload Excel File", "⚡ Gunakan Sample Demo Data"],
+    index=1 if st.session_state["use_demo"] else 0
+)
+
+# Reset demo mode if user selects upload manually
+if data_mode == "Upload Excel File" and st.session_state["use_demo"]:
+    st.session_state["use_demo"] = False
 
 uploaded_file = None
 if data_mode == "Upload Excel File":
-    uploaded_file = st.sidebar.file_uploader("Upload File Excel Monitoring", type=["xlsx", "xls"])
+    sidebar_file = st.sidebar.file_uploader("Upload File Excel Monitoring", type=["xlsx", "xls"], key="sidebar_uploader")
+    uploaded_file = sidebar_file
+
     if uploaded_file is None:
-        st.info("💡 **Tips:** Silakan upload file Excel di sidebar, atau pilih **'⚡ Gunakan Sample Demo Data'** untuk mencoba dashboard langsung!")
-        st.stop()
-    df_raw = process_data(uploaded_file, is_demo=False)
+        # Centered Hero Section for Upload
+        hero_col1, hero_col2, hero_col3 = st.columns([1, 2.8, 1])
+        with hero_col2:
+            st.markdown("""
+            <div style="text-align: center; padding: 28px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; margin-top: 10px; margin-bottom: 20px;">
+                <h3 style="color: #60a5fa; margin-top: 0; font-weight: 700;">📥 Upload File Excel Monitoring FYP</h3>
+                <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 16px;">
+                    Silakan upload file Excel terbaru kamu di bawah ini (format: <b>1 sheet = 1 kelas</b>) untuk mulai menganalisis data kepatuhan point logbook.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            center_file = st.file_uploader("Drop file Excel di sini atau klik untuk memilih file", type=["xlsx", "xls"], key="center_uploader")
+            
+            if center_file is not None:
+                uploaded_file = center_file
+                df_raw = process_data(uploaded_file, is_demo=False)
+            else:
+                st.markdown("<div style='text-align: center; color: #94a3b8; font-size: 0.9rem; margin-top: 15px;'>Belum punya file Excel? Coba langsung dashboard dengan data demo:</div>", unsafe_allow_html=True)
+                if st.button("⚡ Gunakan Sample Demo Data Langsung", use_container_width=True, type="primary"):
+                    st.session_state["use_demo"] = True
+                    st.rerun()
+                st.stop()
+    else:
+        df_raw = process_data(uploaded_file, is_demo=False)
 else:
     df_raw = process_data(None, is_demo=True)
     st.sidebar.success("✅ Menggunakan Sample Data Demo!")
