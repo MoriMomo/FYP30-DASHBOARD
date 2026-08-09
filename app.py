@@ -78,6 +78,39 @@ st.markdown("""
         color: #60a5fa;
         font-size: 1.1rem;
     }
+    /* Mobile Responsiveness & Fluid Layout Enhancements */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+        }
+        div[data-testid="column"] {
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+            margin-bottom: 10px !important;
+        }
+        .metric-card {
+            padding: 14px 16px !important;
+            margin-bottom: 8px !important;
+        }
+        .metric-value {
+            font-size: 1.4rem !important;
+        }
+        .metric-title {
+            font-size: 0.75rem !important;
+        }
+        .gdrive-callout {
+            padding: 14px 16px !important;
+        }
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 4px !important;
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+        }
+        .stTabs [data-baseweb="tab"] {
+            font-size: 0.82rem !important;
+            padding: 8px 10px !important;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
