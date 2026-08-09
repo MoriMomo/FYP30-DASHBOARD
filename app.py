@@ -393,11 +393,9 @@ if search_query:
 # ============================================================
 # MAIN DASHBOARD TABS
 # ============================================================
-tab_overview, tab_rootcause, tab_course, tab_scatter, tab_diagnostics, tab_details, tab_action = st.tabs([
+tab_overview, tab_rootcause, tab_diagnostics, tab_details, tab_action = st.tabs([
     "📊 Overview",
     "🌳 Treemap",
-    "📚 Courses",
-    "📈 Scatter",
     "👤 Diagnostics",
     "📋 Details",
     "💬 WA Report"
@@ -636,159 +634,7 @@ with tab_rootcause:
 
 
 # ------------------------------------------------------------
-# TAB 3: COURSE & SESSION DROP DIAGNOSTICS
-# ------------------------------------------------------------
-with tab_course:
-    st.subheader("📚 Course & Session Drop Diagnostics")
-    st.caption("Analisis mendalam untuk mengetahui topik/sesi perkuliahan mana yang paling banyak mengalami kendala logbook (Sesi Nilai 0 atau Sesi Kosong).")
-
-    df_sess = extract_unnested_sessions(df_filtered)
-
-    if not df_sess.empty:
-        # Session KPI Summary
-        top_sess_list = sorted(df_sess["Sesi"].unique())
-        
-        c_col1, c_col2 = st.columns([1, 2])
-        
-        with c_col1:
-            st.markdown("#### 🎯 Filter & Pilih Sesi Spresifik:")
-            selected_sess = st.selectbox("Pilih Sesi Logbook Bermasalah:", ["-- Tampilkan Semua Sesi --"] + top_sess_list)
-            
-            if selected_sess != "-- Tampilkan Semua Sesi --":
-                df_sess_sub = df_sess[df_sess["Sesi"] == selected_sess]
-                st.metric(f"Total Student Incomplete di {selected_sess}", len(df_sess_sub))
-                st.metric("Total Kelas Terdampak", df_sess_sub["Kelas"].nunique())
-            else:
-                st.metric("Total Frekuensi Kejadian Incomplete Sesi", len(df_sess))
-                st.metric("Total Topik Sesi Bermasalah", len(top_sess_list))
-
-        with c_col2:
-            st.markdown("#### 📊 Top Sesi Penyebab Discrepancy Point")
-            sess_rank = df_sess.groupby(["Sesi", "Tipe Kendala"]).size().reset_index(name="Jumlah Student")
-            fig_sess_rank = px.bar(
-                sess_rank,
-                x="Jumlah Student",
-                y="Sesi",
-                color="Tipe Kendala",
-                barmode="stack",
-                orientation="h",
-                color_discrete_map={"Sesi Kosong": "#ef4444", "Nilai 0": "#f97316"},
-                text="Jumlah Student"
-            )
-            fig_sess_rank.update_layout(height=340, margin=dict(t=20, b=20, l=20, r=20))
-            st.plotly_chart(fig_sess_rank, use_container_width=True)
-
-        st.divider()
-
-        st.subheader("🔥 Heatmap Matrix: Kelas vs Topik Sesi Bermasalah")
-        st.caption("Menunjukkan kelas mana saja yang belum melengkapi sesi tertentu.")
-        
-        pivot_sess_class = pd.crosstab(df_sess["Kelas"], df_sess["Sesi"])
-        fig_sess_heat = px.imshow(
-            pivot_sess_class,
-            labels=dict(x="Topik Sesi", y="Kelas", color="Jumlah Student"),
-            color_continuous_scale="Reds",
-            text_auto=True,
-            aspect="auto",
-            title="Matrix Persebaran Sesi Incomplete Per Kelas"
-        )
-        fig_sess_heat.update_layout(height=480)
-        st.plotly_chart(fig_sess_heat, use_container_width=True)
-
-        st.divider()
-
-        # Detailed Breakdown List by Selected Session
-        if selected_sess != "-- Tampilkan Semua Sesi --":
-            st.subheader(f"📋 Daftar Mahasiswa Lacking Point pada {selected_sess}")
-            df_sess_detail = df_sess[df_sess["Sesi"] == selected_sess][["Kelas", "PIC", "FL", "Freshman", "NIM", "Tipe Kendala", "selisih", "Severity"]]
-            st.dataframe(df_sess_detail.sort_values("Kelas"), use_container_width=True, hide_index=True)
-        else:
-            st.subheader("📋 Breakdown Seluruh Sesi per Mahasiswa")
-            st.dataframe(df_sess[["Sesi", "Tipe Kendala", "Kelas", "PIC", "FL", "Freshman", "NIM", "selisih"]].sort_values("Sesi"), use_container_width=True, hide_index=True)
-
-    else:
-        st.success("🎉 Tidak ada kendala sesi (Sesi 0 atau Sesi Kosong) ditemukan pada filter saat ini!")
-
-
-# ------------------------------------------------------------
-# TAB 4: COMPLIANCE SCATTER & MATRIX ANALYTICS
-# ------------------------------------------------------------
-with tab_scatter:
-    st.subheader("📈 Compliance Scatter Analytics (Garis Diagonal y = x)")
-    st.caption("Diagram sebar Data Science untuk mengevaluasi posisi kesesuaian point. Titik di bawah garis diagonal mewakili freshman dengan selisih point terutang.")
-
-    if not df_filtered.empty:
-        fig_scatter = px.scatter(
-            df_filtered,
-            x="prediksi point",
-            y="point apps",
-            color="Severity Level",
-            size="selisih",
-            size_max=22,
-            hover_name="NAMA FRESHMEN",
-            hover_data=["NIM FRESHMEN", "Kelas", "NAMA FRESHMEN LEADER", "PIC", "selisih"],
-            color_discrete_map={
-                "🟢 Sesuai": "#22c55e",
-                "🟡 Low Variance (1-2 pts)": "#eab308",
-                "🟠 Medium Variance (3-5 pts)": "#f97316",
-                "🔴 High Priority Audit (>5 pts)": "#ef4444"
-            },
-            title="Point Prediksi vs Point Apps (Titik di bawah garis = Terutang Point)"
-        )
-
-        max_val = max(int(df_filtered["prediksi point"].max()), int(df_filtered["point apps"].max()), 50)
-        fig_scatter.add_shape(
-            type="line",
-            x0=0, y0=0, x1=max_val, y1=max_val,
-            line=dict(color="#38bdf8", width=2, dash="dash")
-        )
-        fig_scatter.add_annotation(
-            x=max_val * 0.75, y=max_val * 0.75,
-            text="Garis Kepatuhan Sempurna (y = x)",
-            showarrow=False,
-            font=dict(color="#38bdf8", size=13)
-        )
-        fig_scatter.update_layout(height=520, margin=dict(t=40, b=20, l=20, r=20))
-        st.plotly_chart(fig_scatter, use_container_width=True)
-
-        st.divider()
-
-        matrix_col1, matrix_col2 = st.columns(2)
-
-        with matrix_col1:
-            st.subheader("🔥 Matrix Severity Concentration Per PIC")
-            heatmap_data = pd.crosstab(df_filtered["PIC"], df_filtered["Severity Level"])
-            fig_heat = px.imshow(
-                heatmap_data,
-                labels=dict(x="Severity Level", y="PIC", color="Jumlah Freshmen"),
-                color_continuous_scale="Reds",
-                text_auto=True,
-                aspect="auto",
-                title="Matrix Konsentrasi Discrepancy"
-            )
-            fig_heat.update_layout(height=420)
-            st.plotly_chart(fig_heat, use_container_width=True)
-
-        with matrix_col2:
-            st.subheader("📊 Distirbusi Statistik Selisih Point")
-            df_non_zero = df_filtered[df_filtered["selisih"] > 0]
-            if not df_non_zero.empty:
-                fig_box = px.box(
-                    df_non_zero,
-                    x="Kelas",
-                    y="selisih",
-                    color="Kelas",
-                    points="all",
-                    title="Sebaran Outlier Selisih Point Per Kelas"
-                )
-                fig_box.update_layout(height=420, showlegend=False, xaxis_tickangle=-45)
-                st.plotly_chart(fig_box, use_container_width=True)
-            else:
-                st.info("Semua selisih point = 0")
-
-
-# ------------------------------------------------------------
-# TAB 5: PIC & FL DIAGNOSTICS
+# TAB 3: PIC & FL DIAGNOSTICS
 # ------------------------------------------------------------
 with tab_diagnostics:
     diag_col1, diag_col2 = st.columns([1, 1])
