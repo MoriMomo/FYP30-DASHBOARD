@@ -319,17 +319,27 @@ def extract_unnested_sessions(df):
 # ============================================================
 # HEADER & SIDEBAR NAVIGATION
 # ============================================================
-st.title("📊 FYP B30 - Freshman Progress & Data Science Analytics")
-
-# Custom Banner Callout
 st.markdown(f"""
-<div class="gdrive-callout">
-    <h4>📌 Petunjuk Monitoring & Crosscheck Logbook FYP</h4>
-    <p>Status <b>"Belum Sesuai"</b> menandakan adanya selisih antara data <b>File Monitoring FL</b> dengan data <b>Logbook Aplikasi</b> real-time.</p>
-    <p>FYPL & PIC dimohon melakukan audit silang dengan bukti fisik/digital pada Google Drive Logbook.</p>
-    <a href="{GDRIVE_LOGBOOK_LINK}" target="_blank" style="display: inline-block; background: #3b82f6; color: white; padding: 6px 16px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; margin-top: 6px;">
-        📁 Buka Google Drive Logbook All Drive
-    </a>
+<div style="text-align: center; padding: 10px 0 20px 0;">
+    <h1 style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(90deg, #60a5fa, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px;">
+        📊 FYP B30 - Freshman Progress & Analytics
+    </h1>
+    <p style="color: #94a3b8; font-size: 1rem; font-weight: 500; margin-bottom: 24px;">
+        Platform Analytics Point Logbook, Anomaly Detection & Progress Dashboard
+    </p>
+    
+    <div style="max-width: 850px; margin: 0 auto; padding: 20px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.3); border-top: 4px solid #3b82f6; border-radius: 14px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+        <h4 style="color: #60a5fa; font-size: 1.1rem; margin-top: 0; margin-bottom: 8px; font-weight: 700;">📌 Petunjuk Monitoring & Crosscheck Logbook FYP</h4>
+        <p style="margin-bottom: 6px; font-size: 0.93rem; color: #cbd5e1;">
+            Status <b>"Belum Sesuai"</b> menandakan adanya selisih antara data <b>File Monitoring FL</b> dengan <b>Logbook Aplikasi</b> real-time.
+        </p>
+        <p style="margin-bottom: 14px; font-size: 0.88rem; color: #94a3b8;">
+            FYPL & PIC dimohon melakukan audit silang dengan bukti fisik/digital pada Google Drive Logbook.
+        </p>
+        <a href="{GDRIVE_LOGBOOK_LINK}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(59,130,246,0.35);">
+            📁 Buka Google Drive Logbook All Drive
+        </a>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
