@@ -194,7 +194,18 @@ def generate_sample_dataset():
 @st.cache_data
 def process_data(file_buffer, is_demo=False):
     if is_demo:
-        df_all = generate_sample_dataset()
+        if os.path.exists("logbook_mismatch_per_kelas.xlsx"):
+            xls = pd.ExcelFile("logbook_mismatch_per_kelas.xlsx")
+            all_dfs = []
+            for sheet_name in xls.sheet_names:
+                df_sheet = pd.read_excel(xls, sheet_name=sheet_name)
+                if not df_sheet.empty:
+                    df_sheet["Kelas"] = sheet_name.strip()
+                    all_dfs.append(df_sheet)
+            df_all = pd.concat(all_dfs, ignore_index=True)
+            df_all.columns = [str(c).strip() for c in df_all.columns]
+        else:
+            df_all = generate_sample_dataset()
     else:
         xls = pd.ExcelFile(file_buffer)
         all_dfs = []
@@ -237,16 +248,11 @@ def process_data(file_buffer, is_demo=False):
     df_all = df_all.rename(columns=col_rename_map)
 
     # Clean & Coerce Required Columns
-    df_all["prediksi point"] = pd.to_numeric(df_all.get("prediksi point", 0), errors="coerce").fillna(0)
-    df_all["point apps"] = pd.to_numeric(df_all.get("point apps", 0), errors="coerce").fillna(0)
+    df_all["prediksi point"] = pd.to_numeric(df_all.get("prediksi point", 0), errors="coerce").fillna(0).astype(int)
+    df_all["point apps"] = pd.to_numeric(df_all.get("point apps", 0), errors="coerce").fillna(0).astype(int)
     
-    # Calculate Selisih if absent or invalid
-    if "selisih" not in df_all.columns or df_all["selisih"].isnull().all():
-        df_all["selisih"] = (df_all["prediksi point"] - df_all["point apps"]).abs()
-    else:
-        df_all["selisih"] = pd.to_numeric(df_all["selisih"], errors="coerce").fillna(
-            (df_all["prediksi point"] - df_all["point apps"]).abs()
-        )
+    # Calculate Selisih as absolute positive gap
+    df_all["selisih"] = (df_all["prediksi point"] - df_all["point apps"]).abs().astype(int)
 
     # Core Status Logic
     df_all["Status"] = df_all.apply(
@@ -612,16 +618,35 @@ with tab_rootcause:
     if not df_belum.empty:
         df_belum["Gap Sizing"] = df_belum["selisih"].apply(lambda v: max(1, v))
         
-        # Clean multi-line compact label with detailed info (Name, Selisih, Prediksi vs Apps, Session notes)
+        # Smart compact label formatting for real Excel data like logbook_mismatch_per_kelas.xlsx
         def make_leaf_label(r):
             lbl = f"<b>{r['NAMA FRESHMEN']}</b><br>Selisih: -{r['selisih']} pt ({r['prediksi point']} ➔ {r['point apps']})"
             notes = []
-            if r['Sesi yang 0'] != "-":
-                notes.append(f"0: {r['Sesi yang 0']}")
-            if r['Sesi yang Kosong'] != "-":
-                notes.append(f"Kosong: {r['Sesi yang Kosong']}")
+            
+            # Format Sesi 0
+            v0 = str(r.get('Sesi yang 0', '-')).strip()
+            if v0 not in ['-', 'nan', 'None', '']:
+                s_list = [s.strip() for s in v0.split(',') if s.strip()]
+                if len(s_list) == 1:
+                    notes.append(f"0: {s_list[0]}")
+                elif len(s_list) == 2:
+                    notes.append(f"0: {s_list[0]}, {s_list[1]}")
+                elif len(s_list) > 2:
+                    notes.append(f"0: {len(s_list)} Sesi ({s_list[0]}...)")
+                    
+            # Format Sesi Kosong
+            vk = str(r.get('Sesi yang Kosong', '-')).strip()
+            if vk not in ['-', 'nan', 'None', '']:
+                s_list = [s.strip() for s in vk.split(',') if s.strip()]
+                if len(s_list) == 1:
+                    notes.append(f"Kosong: {s_list[0]}")
+                elif len(s_list) == 2:
+                    notes.append(f"Kosong: {s_list[0]}, {s_list[1]}")
+                elif len(s_list) > 2:
+                    notes.append(f"Kosong: {len(s_list)} Sesi ({s_list[0]}...)")
+
             if notes:
-                lbl += f"<br>" + " | ".join(notes)
+                lbl += f"<br>📚 " + " | ".join(notes)
             return lbl
 
         df_belum["Leaf Label"] = df_belum.apply(make_leaf_label, axis=1)
