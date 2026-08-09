@@ -321,25 +321,25 @@ def extract_unnested_sessions(df):
 # ============================================================
 st.markdown(f"""
 <div style="text-align: center; padding: 10px 0 20px 0;">
-    <h1 style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(90deg, #60a5fa, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px;">
-        📊 FYP B30 - Freshman Progress & Analytics
-    </h1>
-    <p style="color: #94a3b8; font-size: 1rem; font-weight: 500; margin-bottom: 24px;">
-        Platform Analytics Point Logbook, Anomaly Detection & Progress Dashboard
-    </p>
-    
-    <div style="max-width: 850px; margin: 0 auto; padding: 20px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.3); border-top: 4px solid #3b82f6; border-radius: 14px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
-        <h4 style="color: #60a5fa; font-size: 1.1rem; margin-top: 0; margin-bottom: 8px; font-weight: 700;">📌 Petunjuk Monitoring & Crosscheck Logbook FYP</h4>
-        <p style="margin-bottom: 6px; font-size: 0.93rem; color: #cbd5e1;">
-            Status <b>"Belum Sesuai"</b> menandakan adanya selisih antara data <b>File Monitoring FL</b> dengan <b>Logbook Aplikasi</b> real-time.
-        </p>
-        <p style="margin-bottom: 14px; font-size: 0.88rem; color: #94a3b8;">
-            FYPL & PIC dimohon melakukan audit silang dengan bukti fisik/digital pada Google Drive Logbook.
-        </p>
-        <a href="{GDRIVE_LOGBOOK_LINK}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(59,130,246,0.35);">
-            📁 Buka Google Drive Logbook All Drive
-        </a>
-    </div>
+<h1 style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(90deg, #60a5fa, #3b82f6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px;">
+📊 FYP B30 - Freshman Progress & Analytics
+</h1>
+<p style="color: #94a3b8; font-size: 1rem; font-weight: 500; margin-bottom: 24px;">
+Platform Analytics Point Logbook, Anomaly Detection & Progress Dashboard
+</p>
+
+<div style="max-width: 850px; margin: 0 auto; padding: 20px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.3); border-top: 4px solid #3b82f6; border-radius: 14px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+<h4 style="color: #60a5fa; font-size: 1.1rem; margin-top: 0; margin-bottom: 8px; font-weight: 700;">📌 Petunjuk Monitoring & Crosscheck Logbook FYP</h4>
+<p style="margin-bottom: 6px; font-size: 0.93rem; color: #cbd5e1;">
+Status <b>"Belum Sesuai"</b> menandakan adanya selisih antara data <b>File Monitoring FL</b> dengan <b>Logbook Aplikasi</b> real-time.
+</p>
+<p style="margin-bottom: 14px; font-size: 0.88rem; color: #94a3b8;">
+FYPL & PIC dimohon melakukan audit silang dengan bukti fisik/digital pada Google Drive Logbook.
+</p>
+<a href="{GDRIVE_LOGBOOK_LINK}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(59,130,246,0.35);">
+📁 Buka Google Drive Logbook All Drive
+</a>
+</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -370,13 +370,13 @@ if data_mode == "Upload Excel File":
         hero_col1, hero_col2, hero_col3 = st.columns([1, 2.8, 1])
         with hero_col2:
             st.markdown("""
-            <div style="text-align: center; padding: 28px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; margin-top: 10px; margin-bottom: 20px;">
-                <h3 style="color: #60a5fa; margin-top: 0; font-weight: 700;">📥 Upload File Excel Monitoring FYP</h3>
-                <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 16px;">
-                    Silakan upload file Excel terbaru kamu di bawah ini (format: <b>1 sheet = 1 kelas</b>) untuk mulai menganalisis data kepatuhan point logbook.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+<div style="text-align: center; padding: 28px 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; margin-top: 10px; margin-bottom: 20px;">
+<h3 style="color: #60a5fa; margin-top: 0; font-weight: 700;">📥 Upload File Excel Monitoring FYP</h3>
+<p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 16px;">
+Silakan upload file Excel terbaru kamu di bawah ini (format: <b>1 sheet = 1 kelas</b>) untuk mulai menganalisis data kepatuhan point logbook.
+</p>
+</div>
+""", unsafe_allow_html=True)
 
             center_file = st.file_uploader("Drop file Excel di sini atau klik untuk memilih file", type=["xlsx", "xls"], key="center_uploader")
             
